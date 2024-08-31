@@ -11,6 +11,7 @@ export async function POST(request: Request): Promise<NextResponse | Response> {
     console.log("LOGIN API: ", email, password);
 
     const existingUser = await getUserByEmail(email);
+    console.log( "EXISTING USER: ", existingUser);
 
     if (!existingUser) {
         return new NextResponse("User does not exist", { status: 400 });
@@ -23,7 +24,7 @@ export async function POST(request: Request): Promise<NextResponse | Response> {
             redirectTo: DEFAULT_LOGIN_REDIRECT_URL,
             redirect: true,
         });
-        return NextResponse.redirect(DEFAULT_LOGIN_REDIRECT_URL);
+        return new NextResponse("redirect", { status: 200 });
     } catch (error) {
         if (error instanceof AuthError) {
             switch (error.type) {

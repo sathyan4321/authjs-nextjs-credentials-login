@@ -48,6 +48,9 @@ export function LoginForm() {
         if(response.status === 400){
             toast.error("User not found")
         }
+        if(response.status === 200) {
+          toast.success("Login Successful")
+        }
         }catch(error){
             console.log(error)
             toast.error("Login Failed")
