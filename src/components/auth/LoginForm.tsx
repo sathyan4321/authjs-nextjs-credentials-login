@@ -1,115 +1,116 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import React, { useState, useTransition } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import * as z from 'zod';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { LoginSchema } from '@/Schema/AuthSchema';
+import { login } from '../../../actions/login-action';
 
-import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import toast from "react-hot-toast"
-import axios from "axios"
-import { useRouter } from "next/navigation"
-import { login } from "../../../actions/login-action"
+type LoginFormInputs = z.infer<typeof LoginSchema>;
 
+const LoginForm: React.FC = () => {
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get('error') === "OAuthAccountNotLinked" ? " Email already in use with different provider!" : "";
+  const router = useRouter();
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
+  
 
-export const LoginFormSchema = z.object({
-  email: z.string().email( {
-    message: "Please enter a valid email.",
-  }),
-  password: z.string().min(4, {
-    message: "Password must be at least 4 characters.",
-  }),
-})
+  const form = useForm<LoginFormInputs>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-export function LoginForm() {
-    const router = useRouter();
-    const form = useForm<z.infer<typeof LoginFormSchema>>({
-        resolver: zodResolver(LoginFormSchema),
-        defaultValues: {
-          email: "",
-          password: "",
-        },
+  const onSubmit: SubmitHandler<LoginFormInputs> = (values) => {
+    setError("");
+    setSuccess("");
+
+    console.log(values);
+
+    startTransition(() => {
+      login(values)
+      .then((data) => {
+        if (data?.error) {
+          setError(data.error);
+          form.reset();
+          setTimeout(() => {
+            setError("");
+          },4000);
+        }
+
+        if (data?.success) {
+          form.reset();
+          setSuccess(data.success);
+          router.push("/home");
+        }
       })
-    
-      // 2. Define a submit handler.
-      async function onSubmit(values: z.infer<typeof LoginFormSchema>) {
-        console.log(values);
-        try{
-        const response = await axios.post("/api/auth/login", values)
-        if(response.status === 400){
-            toast.error("User not found")
-        }
-        if(response.status === 200) {
-          toast.success("Login Successful")
-        }
-        }catch(error){
-            console.log(error)
-            toast.error("Login Failed")
-        }
-    }
+      .catch (() => {
+        setError("Something went wrong in Verification !");
+      })
+    })
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {/* <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input placeholder="" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        /> */}
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input placeholder="" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
-  )
-}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-4">
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            {...field}
+                            disabled={isPending}
+                            placeholder="heessci@example.com"
+                            className="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-400 focus:ring-slate-200"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            {...field}
+                            disabled={isPending}
+                            placeholder="********"
+                            className="w-full rounded-md border-slate-300 shadow-sm focus:border-slate-400 focus:ring-slate-200"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+            {error && <p className='text-red-500 text-sm'>{error}</p>}
+            {urlError && <p className='text-red-500 text-sm'>{urlError}</p>}
+            {success && <p className='text-green-500 text-sm'>{success}</p>}
+          </div>
+          <Button type="submit" disabled={isPending} className='w-full'>Login</Button>
+        </form>
+      </Form>
+  );
+};
+
+export default LoginForm;

@@ -9,6 +9,9 @@ export default async function SweetHome() {
       <h1 className="text-3xl">Middleware page</h1>
       <p className="text-lg">{session?.user?.email}</p>
       <LogOut/>
+      hello
+      welcome
+      
 
     </main>
   );
