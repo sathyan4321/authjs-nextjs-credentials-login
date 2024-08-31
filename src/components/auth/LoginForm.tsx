@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import toast from "react-hot-toast"
 import axios from "axios"
 import { useRouter } from "next/navigation"
+import { login } from "../../../actions/login-action"
 
 
 export const LoginFormSchema = z.object({
@@ -43,8 +44,7 @@ export function LoginForm() {
       async function onSubmit(values: z.infer<typeof LoginFormSchema>) {
         console.log(values);
         try{
-        const response = await axios.post("/api/auth/login",values)
-        console.log(response)
+        login(values)
         }catch(error){
             console.log(error)
             toast.error("Login Failed")
