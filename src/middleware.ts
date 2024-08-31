@@ -83,8 +83,8 @@ if (isAuthRoute) {
     }
     return NextResponse.next();
 }
-if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/auth/login', nextUrl));
+if (!isLoggedIn && !isPublicRoute) {
+    return NextResponse.redirect(new URL('/', nextUrl));
 }
 
 
