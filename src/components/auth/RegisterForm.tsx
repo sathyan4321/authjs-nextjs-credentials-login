@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -18,26 +17,14 @@ import { Input } from "@/components/ui/input"
 import toast from "react-hot-toast"
 import axios from "axios"
 import { useRouter } from "next/navigation"
+import { RegisterSchema } from "@/Schema/AuthSchema"
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-  email: z.string().email( {
-    message: "Please enter a valid email.",
-  }),
-  phone: z.string().min(10).max(10, {
-    message: "Phone number must be at least 10 characters.",
-  }),
-  password: z.string().min(4, {
-    message: "Password must be at least 4 characters.",
-  }),
-})
+
 
 export function RegisterForm() {
     const router = useRouter();
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof RegisterSchema>>({
+        resolver: zodResolver(RegisterSchema),
         defaultValues: {
           name: "",
           email: "",
@@ -47,7 +34,7 @@ export function RegisterForm() {
       })
     
       // 2. Define a submit handler.
-      async function onSubmit(values: z.infer<typeof formSchema>) {
+      async function onSubmit(values: z.infer<typeof RegisterSchema>) {
         try {
             const response = await axios.post("/api/auth/register", values)
             toast.success("Account created successfully")

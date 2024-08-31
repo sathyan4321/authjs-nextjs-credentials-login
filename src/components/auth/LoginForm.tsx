@@ -44,7 +44,10 @@ export function LoginForm() {
       async function onSubmit(values: z.infer<typeof LoginFormSchema>) {
         console.log(values);
         try{
-        login(values)
+        const response = await axios.post("/api/auth/login", values)
+        if(response.status === 400){
+            toast.error("User not found")
+        }
         }catch(error){
             console.log(error)
             toast.error("Login Failed")

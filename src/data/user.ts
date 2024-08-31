@@ -30,3 +30,16 @@ export const getUserById = async (id: string) => {
 };
 
 
+export const getUserByDb = async (email: string, password: string) => {
+  try {
+    const login = await db.user.findUnique({
+      where: {
+        email,password
+      },
+    });
+    return login;
+  } catch {
+    return null;
+  }
+};
+
